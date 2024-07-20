@@ -1,19 +1,49 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FiCalendar, FiClock, FiDollarSign, FiMapPin } from "react-icons/fi";
 
 const Card = ({ data }) => {
-  const {companyName,companyLogo,minPrice,maxPrice,salaryType,jobLocation,employmentType,postingDate,description}=data;
+  const {
+    companyName,
+    jobTitle,
+    companyLogo,
+    minPrice,
+    maxPrice,
+    salaryType,
+    jobLocation,
+    employmentType,
+    postingDate,
+    description,
+  } = data;
   return (
-    
-      <section className='card'>
-        <Link to={"/"} className='flex gap-4 flex-col sm:flex-row items-start'>
+    <section className="card">
+      <Link to={"/"} className="flex gap-4 flex-col sm:flex-row items-start">
         <img src={companyLogo} alt="" />
         <div>
-          
+          <h4 className="text-primary">{companyName}</h4>
+          <h3 className="text-lg font-semibold mb-2">{jobTitle}</h3>
+          <div className="text-primary/70 text-base flex flex-wrap gap-2 mb-2">
+            <span className="flex items-center gap-2">
+              <FiMapPin></FiMapPin>
+              {jobLocation}
+            </span>
+            <span className="flex items-center gap-2">
+              <FiClock></FiClock>
+              {employmentType}
+            </span>
+            <span className="flex items-center gap-2">
+              <FiDollarSign></FiDollarSign>
+              {minPrice}-{maxPrice}k
+            </span>
+            <span className="flex items-center gap-2">
+              <FiCalendar></FiCalendar>
+              {postingDate}
+            </span>
+          </div>
+          <p className='text-base text-primary/70'>{description}</p>
         </div>
-        </Link>
-      </section>
-    
+      </Link>
+    </section>
   );
 };
 
