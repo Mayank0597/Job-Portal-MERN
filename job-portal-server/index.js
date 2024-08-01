@@ -75,6 +75,101 @@
 // app.listen(port, () => {
 //   console.log(`Example app listening on port ${port}`)
 // })
+// ------------------------------------------------------------------------------------
+
+// const express = require('express');
+// const app = express();
+// const cors = require('cors');
+// const port = process.env.PORT || 3000;
+// require('dotenv').config();
+
+// // middleware
+// app.use(express.json());
+// app.use(cors());
+
+// const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@job-portal-demo.otd6mwu.mongodb.net/?retryWrites=true&w=majority&appName=job-portal-demo`;
+
+// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// const client = new MongoClient(uri, {
+//   serverApi: {
+//     version: ServerApiVersion.v1,
+//     strict: true,
+//     deprecationErrors: true,
+//   }
+// });
+
+// // Connect the client to the server
+// client.connect()
+//   .then(() => {
+//     console.log("Connected to MongoDB");
+
+//     // create db
+//     const db = client.db("mernJobPortal");
+//     const jobsCollection = db.collection("demoJobs");
+
+//     // post a job
+//     app.post("/post-job", async (req, res) => {
+//       const body = req.body;
+//       body.createAt = new Date();
+//       const result = await jobsCollection.insertOne(body);
+//       if (result.insertedId) {
+//         return res.status(200).send(result);
+//       } else {
+//         return res.status(404).send({
+//           message: "Cannot insert! Try again later",
+//           status: false
+//         });
+//       }
+//     });
+
+//     // get all jobs
+//     app.get("/all-jobs", async (req, res) => {
+//       const jobs = await jobsCollection.find({}).toArray();
+//       res.send(jobs);
+//     });
+
+//     // get single job using id
+//     app.get("/all-jobs/:id", async(req, res)=>{
+//       const id = req.params.id;
+//       const job = await jobsCollection.findOne({
+//         _id: new ObjectId(id)
+
+//       })
+//       res.send(job)
+//     })
+
+//     // get jobs by email
+//     app.get("/myJobs/:email", async(req,res)=>{
+//       // console.log(req.params.email);
+//       const jobs = await jobsCollection.find({postedBy : req.params.email}).toArray();
+//       res.send(jobs)
+//     })
+
+//     // delete a job
+//     app.delete("/job/:id", async(req,res) => {
+//       const id = req.params.id;
+//       const filter = {_id: new ObjectId(id)}
+//       const result = await jobsCollection.deleteOne(filter);
+//       res.send(result)
+//     })
+
+//     // Send a ping to confirm a successful connection
+//     client.db("admin").command({ ping: 1 }).then(() => {
+//       console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//     });
+
+//   })
+//   .catch(err => console.error(err));
+
+// app.get('/', (req, res) => {
+//   res.send('Hello Developer!');
+// });
+
+// app.listen(port, () => {
+//   console.log(`Example app listening on port ${port}`);
+// });
+// -------------------------------------------------------------------------------
 
 const express = require('express');
 const app = express();
@@ -109,14 +204,22 @@ client.connect()
 
     // post a job
     app.post("/post-job", async (req, res) => {
-      const body = req.body;
-      body.createAt = new Date();
-      const result = await jobsCollection.insertOne(body);
-      if (result.insertedId) {
-        return res.status(200).send(result);
-      } else {
-        return res.status(404).send({
-          message: "Cannot insert! Try again later",
+      try {
+        const body = req.body;
+        body.createAt = new Date();
+        const result = await jobsCollection.insertOne(body);
+        if (result.insertedId) {
+          return res.status(200).send(result);
+        } else {
+          return res.status(404).send({
+            message: "Cannot insert! Try again later",
+            status: false
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({
+          message: "Internal Server Error",
           status: false
         });
       }
@@ -124,24 +227,76 @@ client.connect()
 
     // get all jobs
     app.get("/all-jobs", async (req, res) => {
-      const jobs = await jobsCollection.find({}).toArray();
-      res.send(jobs);
+      try {
+        const jobs = await jobsCollection.find({}).toArray();
+        res.send(jobs);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({
+          message: "Internal Server Error",
+          status: false
+        });
+      }
+    });
+
+    // get single job using id
+    app.get("/all-jobs/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        if (!ObjectId.isValid(id)) {
+          return res.status(400).send({
+            message: "Invalid ID format",
+            status: false
+          });
+        }
+        const job = await jobsCollection.findOne({
+          _id: new ObjectId(id)
+        });
+        res.send(job);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({
+          message: "Internal Server Error",
+          status: false
+        });
+      }
     });
 
     // get jobs by email
-    app.get("/myJobs/:email", async(req,res)=>{
-      // console.log(req.params.email);
-      const jobs = await jobsCollection.find({postedBy : req.params.email}).toArray();
-      res.send(jobs)
-    })
+    app.get("/myJobs/:email", async (req, res) => {
+      try {
+        const jobs = await jobsCollection.find({ postedBy: req.params.email }).toArray();
+        res.send(jobs);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({
+          message: "Internal Server Error",
+          status: false
+        });
+      }
+    });
 
     // delete a job
-    app.delete("/job/:id", async(req,res) => {
-      const id = req.params.id;
-      const filter = {_id: new ObjectId(id)}
-      const result = await jobsCollection.deleteOne(filter);
-      res.send(result)
-    })
+    app.delete("/job/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        if (!ObjectId.isValid(id)) {
+          return res.status(400).send({
+            message: "Invalid ID format",
+            status: false
+          });
+        }
+        const filter = { _id: new ObjectId(id) };
+        const result = await jobsCollection.deleteOne(filter);
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({
+          message: "Internal Server Error",
+          status: false
+        });
+      }
+    });
 
     // Send a ping to confirm a successful connection
     client.db("admin").command({ ping: 1 }).then(() => {
@@ -149,7 +304,9 @@ client.connect()
     });
 
   })
-  .catch(err => console.error(err));
+  .catch(err => {
+    console.error("Failed to connect to MongoDB:", err);
+  });
 
 app.get('/', (req, res) => {
   res.send('Hello Developer!');
