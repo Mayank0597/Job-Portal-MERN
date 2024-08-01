@@ -5,6 +5,7 @@ import About from "../Pages/About";
 import CreateJob from "../Pages/CreateJob";
 import MyJobs from "../Pages/MyJobs";
 import Login from "../components/Login";
+import SalaryPage from "../Pages/SalaryPage";
 
 const router = createBrowserRouter([
   {
@@ -23,12 +24,16 @@ const router = createBrowserRouter([
         path: "/my-jobs",
         element: <MyJobs />,
       },
+      {
+        path: "/salary",
+        element: <SalaryPage />,
+      },
     ],
   },
   {
-    path:"/login",
-    element: <Login/>
-  }
+    path: "/login",
+    element: <Login />,
+  },
 ]);
 
 export default router;
